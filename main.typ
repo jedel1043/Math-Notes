@@ -10,9 +10,73 @@
 = Perspective Projection matrix (Reverse depth + D3D/WGPU/Metal coordinate system)
 
 Source: #link(
-  "https://vincent-p.github.io/posts/vulkan_perspective_matrix/#classic-perspective-with-a-near-and-far-plane",
-  "The perspective projection matrix in Vulkan",
+  "https://vincent-p.github.io/posts/vulkan_perspective_matrix/#classic-perspective-with-a-near-and-far-plane"
+)[The perspective projection matrix in Vulkan]
+
+== Quick reference
+
+#align(center)[
+#table(
+  columns: (33%, 34%, 33%),
+  inset: 10pt,
+  align: (horizon, horizon, left),
+  [*Description*], [*Matrix*], [*Parameters*],
+  [Asymmetric frustum],
+  $
+  mat(
+    (2n) / (r - l), 0, (r + l)/(r - l), 0;
+    0, (2n)/(t - b), (t + b)/(t - b), 0;
+    0, 0, n/(f - n), (n f)/(f - n);
+    0, 0, -1, 0
+  )
+  $,
+  [
+    $n$: near plane\
+    $f$: far plane\
+    $t$: center to top\
+    $b$: center to bottom\
+    $r$: center to left\
+    $l$: center to right\
+  ],
+  [Symmetric frustum],
+  $
+    mat(
+      (2n) / w, 0, 0, 0;
+      0, (2n)/h, 0, 0;
+      0, 0, n/(f - n), (n f)/(f - n);
+      0, 0, -1, 0
+    )
+  $,
+  [
+    $w$: screen width\
+    $h$: screen height\
+  ],
+  [Symmetric frustum\ (fov + aspect ratio)],
+  $
+    mat(
+      mu / r, 0, 0, 0;
+      0, mu, 0, 0;
+      0, 0, n/(f - n), (n f)/(f - n);
+      0, 0, -1, 0
+    )
+  $,
+  [
+    $mu$: $1 slash tan("fov"_y / 2)$ (focal length)\
+    $r$: $w slash h$ (aspect ratio)
+  ],
+  [Symmetric frustum\ (infinite far plane)],
+  $
+    mat(
+      mu / r, 0, 0, 0;
+      0, mu, 0, 0;
+      0, 0, 0, n;
+      0, 0, -1, 0
+    )
+  $
 )
+]
+
+#pagebreak()
 
 == Derivation
 
@@ -184,11 +248,7 @@ $
   z_n = 1/(-z_e)(n / (f - n) z_c + (n f) / (f - n))
 $
 
-== Asymmetric frustum
-
 $
-n = "near plane distance"\
-f = "far plane distance"\
 mat(
   (2n) / (r - l), 0, (r + l)/(r - l), 0;
   0, (2n)/(t - b), (t + b)/(t - b), 0;
@@ -199,7 +259,7 @@ mat(x_e ; y_e ; z_e ; 1)
 = mat(x_c; y_c; z_c; w_c)
 $
 
-== Symmetric frustum
+For the common case of a symmetric frustum
 $
   l = -r, quad b = -t\
   r - l = 2r, quad r + l = 0\
@@ -249,9 +309,7 @@ $
   = mat(x_c; y_c; z_c; w_c)
 $
 
-== Symmetric frustum with infinite far plane
-
-We just need to resolve the limits:
+For a symmetric frustum with infinite far plane, we just need to resolve the limits:
 $
   lim_(f -> infinity) n / (f - n) = 0\
   lim_(f -> infinity) (n f) / (f - n) = n * lim_(f -> infinity) f / (f - n) = n * 1 = n
